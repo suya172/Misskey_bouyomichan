@@ -5,8 +5,21 @@ import emoji
 import requests
 import config
 
-host="misskey.io"
+while(True):
+    host=input("misskey.io:1,その他:2\n番号を入力:")
+    if host == "1":
+        host="misskey.io"
+        break
+    if host == "2":
+        host=input("ホスト名を入力:")
+        break
 token=config.TOKEN
+while(True):
+    channel=int(input("globalTimeline:1,homeTimeline:2,hybirdTimeline:3,localTimeline:4,main:5\n番号を入力:"))
+    if channel > 0 & channel < 6:
+        break
+channel=channel-1
+channels=["globalTimeline","homeTimeline","hybirdTimeline","localTimeline","main"]
 
 ws_url = f"wss://{host}/streaming?i={token}"
 
@@ -15,7 +28,7 @@ def on_open(ws):
     message = {
         "type": "connect",
         "body": {
-            "channel": "localTimeline",
+            "channel": channels[channel],
             "id": "foobar"
         }
     }
