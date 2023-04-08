@@ -4,7 +4,9 @@ import re
 import emoji
 import requests
 import config
+import subprocess
 
+subprocess.Popen("C:\Users\gomit\OneDrive\ドキュメント\BouyomiChan_0_1_11_0_Beta21")
 while(True):
     host=input("misskey.io:1,その他:2\n番号を入力:")
     if host == "1":
