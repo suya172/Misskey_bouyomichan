@@ -5,17 +5,30 @@ import emoji
 import requests
 import config
 import subprocess
+import time
+'''
+import time
+from pydub import AudioSegment
+from pydub.playback import play
+'''
 
-subprocess.Popen("C:\Users\gomit\OneDrive\ドキュメント\BouyomiChan_0_1_11_0_Beta21")
+subprocess.Popen("/mnt/c/BouyomiChan_0_1_11_0_Beta21/BouyomiChan.exe")
+
+token=config.TOKEN
 while(True):
-    host=input("misskey.io:1,その他:2\n番号を入力:")
+    host=input("misskey.io:1,voskey.icalo.net:2,その他:3\n番号を入力:")
     if host == "1":
         host="misskey.io"
+        token=config.TOKEN
         break
     if host == "2":
-        host=input("ホスト名を入力:")
+        host="voskey.icalo.net"
+        token=config.VTOKEN
         break
-token=config.TOKEN
+    if host == "3":
+        host=input("ホスト名を入力:")
+        token=input("トークンを入力:")
+        break
 while(True):
     channel=int(input("globalTimeline:1,homeTimeline:2,hybirdTimeline:3,localTimeline:4,main:5\n番号を入力:"))
     if channel > 0 & channel < 6:
@@ -76,6 +89,7 @@ def toPlain(content):
 
     return content
 
+
 def speak_bouyomi(text='秘密のメッセージ', voice=0, volume=-1, speed=-1, tone=-1):
     res = requests.get(
         'http://localhost:50080/Talk',
@@ -85,11 +99,26 @@ def speak_bouyomi(text='秘密のメッセージ', voice=0, volume=-1, speed=-1,
             'volume': volume,
             'speed': speed,
             'tone': tone})
+    time.sleep(1)
     return res.status_code
+'''
+def speak_voicevox(text='秘密のメッセージ',speaker=8):
+    # 音声合成クエリの作成
+    res1 = requests.post('http://127.0.0.1:50021/audio_query',params = {'text': text, 'speaker': speaker})
+    # 音声合成データの作成
+    res2 = requests.post('http://127.0.0.1:50021/synthesis',params = {'speaker': speaker},data=json.dumps(res1.json()))
 
+    with open('go.wav', mode='wb') as f:
+        f.write(res2.content)
+    # 音声ファイルの読み込み
+    audio_file = AudioSegment.from_file("go.wav", format="wav")
+
+    # 再生
+    play(audio_file)
+'''
 
 if __name__ == "__main__":
-    print(speak_bouyomi('あいうえお'))
+    print(speak_bouyomi('テストテスト'))
 
 
 websocket.enableTrace(True)
