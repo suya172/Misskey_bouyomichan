@@ -58,6 +58,7 @@ def on_message(ws, message):
     if content is None:
         return
     
+    open('out.txt','a').write(f"{username} : {content}\n")
     content=toPlain(content)
 
     username = json_message['body']['body']['user']['username']
@@ -65,7 +66,6 @@ def on_message(ws, message):
 
     # Print the contents of the 'body' field
     print(f"\033[33m{username} : {content}\033[0m")
-    open('out.txt','a').write(f"{username} : {content}\n")
     speak_bouyomi(text=content)
 
 def on_error(ws, error):
