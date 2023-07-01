@@ -12,20 +12,17 @@ from pydub import AudioSegment
 from pydub.playback import play
 '''
 
-subprocess.Popen("/mnt/c/BouyomiChan_0_1_11_0_Beta21/BouyomiChan.exe")
+b_pass
+subprocess.Popen(b_pass)
 
 token=config.TOKEN
 while(True):
-    host=input("misskey.io:1,voskey.icalo.net:2,その他:3\n番号を入力:")
+    host=input("misskey.io:1,その他:2\n番号を入力:")
     if host == "1":
         host="misskey.io"
         token=config.TOKEN
         break
     if host == "2":
-        host="voskey.icalo.net"
-        token=config.VTOKEN
-        break
-    if host == "3":
         host=input("ホスト名を入力:")
         token=input("トークンを入力:")
         break
