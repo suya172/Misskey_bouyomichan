@@ -1,3 +1,6 @@
 # Misskey_bouyomichan
 
 b_passに棒読みちゃん.exeのパスを代入
+環境パスにMisskeyのトークンを設定
+
+実行するとMisskeyの任意のタイムライン上の投稿を読み上げます
