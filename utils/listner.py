@@ -6,14 +6,11 @@ from pykakasi import kakasi
 
 import pyaudio
 
-FORMAT        = pyaudio.paInt16
-SAMPLE_RATE   = 44100        # サンプリングレート
-CHANNELS      = 1            # モノラルかバイラルか
+FORMAT = pyaudio.paInt16
+SAMPLE_RATE = 44100        # サンプリングレート
+CHANNELS = 1            # モノラルかバイラルか
 INPUT_DEVICE_INDEX = 3       # マイクのチャンネル
 CALL_BACK_FREQUENCY = 3      # コールバック呼び出しの周期[sec]
-
-
-OUTPUT_TXT_FILE ="./out.txt" # テキストファイルのファイル名を日付のtxtファイルにする
 
 
 def look_for_audio_input():
@@ -33,72 +30,69 @@ def callback(in_data, frame_count, time_info, status):
     """
     コールバック関数の定義
     """
-    
-    global sprec,kks_converter
+
+    global sprec, kks_converter, on_spoken
 
     try:
-        audiodata  = sr.AudioData(in_data, SAMPLE_RATE, 2)
+        audiodata = sr.AudioData(in_data, SAMPLE_RATE, 2)
         sprec_text = sprec.recognize_google(audiodata, language='ja-JP')
-        
+
         sprec_hiragana = kks_converter.do(sprec_text)
 
-        with open(OUTPUT_TXT_FILE,'a',encoding='utf-8') as f: #ファイルの末尾に追記していく
-            f.write("\n" + sprec_hiragana)
-    
+        print(sprec_hiragana)
+        on_spoken(sprec_hiragana)
+
     except sr.UnknownValueError:
         pass
-    
+
     except sr.RequestError as e:
         pass
-    
+
     finally:
         return (None, pyaudio.paContinue)
 
 
-def realtime_textise():
+def realtime_textise(d):
     """
     リアルタイムで音声を文字起こしする
     """
-    with open(OUTPUT_TXT_FILE, 'w') as f: #txtファイルの新規作成
-        DATE = datetime.now().strftime('%Y%m%d_%H:%M:%S')
-        f.write("日時 : " + DATE + "\n") # 最初の一行目に日時を記載する
 
-    global sprec,kks_converter
-    
+    global sprec, kks_converter, on_spoken, audio, stream
+
+    on_spoken = d
+
     # speech recogniserインスタンスを生成
-    sprec = sr.Recognizer() 
+    sprec = sr.Recognizer()
 
     # kakasi インスタンス生成
     kks = kakasi()
-    kks.setMode('J', 'H') # J(漢字) から H(ひらがな)への変換
+    kks.setMode('J', 'H')
     kks_converter = kks.getConverter()
-    
+
     # Audio インスタンス取得
-    audio  = pyaudio.PyAudio() 
-    
+    audio = pyaudio.PyAudio()
+
     # ストリームオブジェクトを作成
-    stream = audio.open(format             = FORMAT,
-                        rate               = SAMPLE_RATE,
-                        channels           = CHANNELS,
-                        input_device_index = INPUT_DEVICE_INDEX,
-                        input              = True, 
-                        frames_per_buffer  = SAMPLE_RATE*CALL_BACK_FREQUENCY, # CALL_BACK_FREQUENCY 秒周期でコールバック
-                        stream_callback    = callback)
-    
+    stream = audio.open(format=FORMAT,
+                        rate=SAMPLE_RATE,
+                        channels=CHANNELS,
+                        input_device_index=INPUT_DEVICE_INDEX,
+                        input=True,
+                        # CALL_BACK_FREQUENCY 秒周期でコールバック
+                        frames_per_buffer=SAMPLE_RATE*CALL_BACK_FREQUENCY,
+                        stream_callback=callback)
+
     stream.start_stream()
-    
-    while stream.is_active():
-        time.sleep(0.1)
-    
+
+
+def end_realtime_textise():
+
+    global audio, stream
+
     stream.stop_stream()
     stream.close()
     audio.terminate()
 
 
-def main():
-    look_for_audio_input()
-    realtime_textise()
-
-
 if __name__ == '__main__':
-    main()
+    exit()
