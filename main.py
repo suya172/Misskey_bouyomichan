@@ -53,7 +53,7 @@ def on_message(ws, message):
     
     name = json_message['body']['body']['user']['name']
 
-    open('out.txt','a').write(f"{name} : {content}\n")
+    open('out.txt','w',encoding='utf-8').write(f"{name} : {content}\n")
     content=toPlain(content)
 
     # Print the contents of the 'body' field
@@ -105,3 +105,4 @@ ws = websocket.WebSocketApp(ws_url,
                             on_error=on_error,
                             on_close=on_close)
 ws.run_forever()
+
