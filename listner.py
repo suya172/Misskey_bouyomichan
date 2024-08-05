@@ -2,6 +2,7 @@ import speech_recognition as sr
 import wave
 import time
 from datetime import datetime
+from pykakasi import kakasi
 
 import pyaudio
 
@@ -33,14 +34,16 @@ def callback(in_data, frame_count, time_info, status):
     コールバック関数の定義
     """
     
-    global sprec # speech_recognitionオブジェクトを毎回作成するのではなく、使いまわすために、グローバル変数で定義しておく
+    global sprec,kks_converter
 
     try:
         audiodata  = sr.AudioData(in_data, SAMPLE_RATE, 2)
         sprec_text = sprec.recognize_google(audiodata, language='ja-JP')
         
+        sprec_hiragana = kks_converter.do(sprec_text)
+
         with open(OUTPUT_TXT_FILE,'a',encoding='utf-8') as f: #ファイルの末尾に追記していく
-            f.write("\n" + sprec_text)
+            f.write("\n" + sprec_hiragana)
     
     except sr.UnknownValueError:
         pass
@@ -56,15 +59,19 @@ def realtime_textise():
     """
     リアルタイムで音声を文字起こしする
     """
-
-    with open(OUTPUT_TXT_FILE, 'w',encoding='utf-8') as f: #txtファイルの新規作成
+    with open(OUTPUT_TXT_FILE, 'w') as f: #txtファイルの新規作成
         DATE = datetime.now().strftime('%Y%m%d_%H:%M:%S')
         f.write("日時 : " + DATE + "\n") # 最初の一行目に日時を記載する
 
-    global sprec # speech_recognitionオブジェクトを毎回作成するのではなく、使いまわすために、グローバル変数で定義しておく
+    global sprec,kks_converter
     
     # speech recogniserインスタンスを生成
     sprec = sr.Recognizer() 
+
+    # kakasi インスタンス生成
+    kks = kakasi()
+    kks.setMode('J', 'H') # J(漢字) から H(ひらがな)への変換
+    kks_converter = kks.getConverter()
     
     # Audio インスタンス取得
     audio  = pyaudio.PyAudio() 
