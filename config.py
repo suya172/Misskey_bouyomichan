@@ -1,6 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
-
-# 環境変数を参照
 import os
 TOKEN = os.getenv('TOKEN')
+BOUYOMICHAN_PATH = os.getenv('BOUYOMICHAN_PATH')

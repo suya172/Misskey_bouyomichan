@@ -1,3 +1,4 @@
+#pip install websocket-client
 import websocket
 import json
 import re
@@ -6,25 +7,20 @@ import requests
 import config
 import subprocess
 import time
-'''
-import time
-from pydub import AudioSegment
-from pydub.playback import play
-'''
 
-b_pass
-subprocess.Popen(b_pass)
+BOUYOMICHAN_PATH = config.BOUYOMICHAN_PATH
+subprocess.Popen(BOUYOMICHAN_PATH)
 
-token=config.TOKEN
+TOKEN=config.TOKEN
 while(True):
     host=input("misskey.io:1,その他:2\n番号を入力:")
     if host == "1":
         host="misskey.io"
-        token=config.TOKEN
+        TOKEN=config.TOKEN
         break
     if host == "2":
         host=input("ホスト名を入力:")
-        token=input("トークンを入力:")
+        TOKEN=input("トークンを入力:")
         break
 while(True):
     channel=int(input("globalTimeline:1,homeTimeline:2,hybirdTimeline:3,localTimeline:4,main:5\n番号を入力:"))
@@ -33,7 +29,7 @@ while(True):
 channel=channel-1
 channels=["globalTimeline","homeTimeline","hybirdTimeline","localTimeline","main"]
 
-ws_url = f"wss://{host}/streaming?i={token}"
+ws_url = f"wss://{host}/streaming?i={TOKEN}"
 
 def on_open(ws):
     print("WebSocket connection opened")
@@ -97,21 +93,6 @@ def speak_bouyomi(text='秘密のメッセージ', voice=0, volume=-1, speed=-1,
             'tone': tone})
     time.sleep(1)
     return res.status_code
-'''
-def speak_voicevox(text='秘密のメッセージ',speaker=8):
-    # 音声合成クエリの作成
-    res1 = requests.post('http://127.0.0.1:50021/audio_query',params = {'text': text, 'speaker': speaker})
-    # 音声合成データの作成
-    res2 = requests.post('http://127.0.0.1:50021/synthesis',params = {'speaker': speaker},data=json.dumps(res1.json()))
-
-    with open('go.wav', mode='wb') as f:
-        f.write(res2.content)
-    # 音声ファイルの読み込み
-    audio_file = AudioSegment.from_file("go.wav", format="wav")
-
-    # 再生
-    play(audio_file)
-'''
 
 if __name__ == "__main__":
     print(speak_bouyomi('テストテスト'))
