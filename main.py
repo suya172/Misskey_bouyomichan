@@ -2,41 +2,35 @@
 import websocket
 import json
 import re
-import emoji
+import utils.emoji as emoji
 import requests
-import config
 import subprocess
 import time
+import argparse
 
-BOUYOMICHAN_PATH = config.BOUYOMICHAN_PATH
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-H","--host",type=str,default="misskey.io")
+    parser.add_argument("-T","--token",type=str,required=True)
+    channels=["globalTimeline","homeTimeline","hybirdTimeline","localTimeline","main"]
+    parser.add_argument("-C","--channel",type=str,choices=channels,default="localTimeline")
+    parser.add_argument("-B",type=str,default="C:\BouyomiChan_0_1_11_0_Beta21\BouyomiChan.exe")
+    return parser.parse_args()
+
+HOST = get_args().host
+TOKEN = get_args().token
+CHANNEL = get_args().channel
+BOUYOMICHAN_PATH = get_args().B
+
 subprocess.Popen(BOUYOMICHAN_PATH)
-
-TOKEN=config.TOKEN
-while(True):
-    host=input("misskey.io:1,その他:2\n番号を入力:")
-    if host == "1":
-        host="misskey.io"
-        TOKEN=config.TOKEN
-        break
-    if host == "2":
-        host=input("ホスト名を入力:")
-        TOKEN=input("トークンを入力:")
-        break
-while(True):
-    channel=int(input("globalTimeline:1,homeTimeline:2,hybirdTimeline:3,localTimeline:4,main:5\n番号を入力:"))
-    if channel > 0 & channel < 6:
-        break
-channel=channel-1
-channels=["globalTimeline","homeTimeline","hybirdTimeline","localTimeline","main"]
-
-ws_url = f"wss://{host}/streaming?i={TOKEN}"
+ws_url = f"wss://{HOST}/streaming?i={TOKEN}"
 
 def on_open(ws):
     print("WebSocket connection opened")
     message = {
         "type": "connect",
         "body": {
-            "channel": channels[channel],
+            "channel": CHANNEL,
             "id": "foobar"
         }
     }
