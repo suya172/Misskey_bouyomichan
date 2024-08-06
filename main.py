@@ -33,8 +33,7 @@ TOKEN = get_args().token
 CHANNEL = get_args().channel
 BOUYOMICHAN_PATH = get_args().B
 
-if(is_talk):
-    EMOJI_DICT = reactions.get_emojis_dict(HOST)
+EMOJI_DICT = reactions.get_emojis_dict(HOST)
 
 subprocess.Popen(BOUYOMICHAN_PATH)
 ws_url = f"wss://{HOST}/streaming?i={TOKEN}"
@@ -76,22 +75,30 @@ def on_close(ws):
     print("接続を閉じました")
 
 
+def exchangeEmoji(name):
+    if name in EMOJI_DICT:
+        return EMOJI_DICT[name][0]
+    else:
+        return name[1:-1]
+
 def toPlain(content):
+    if 'play/' in content:
+        return 'プレイの投稿'
+
     content = re.sub(
         "(https?:\/\/[\w\/:%#\$&\?\(\)~\.=\+\-]+)|(\[.+\]\(https?:\/\/[\w\/:%#\$&\?\(\)~\.=\+\-]+\))", "「URL省略」", content)
     content = re.sub(
         "\$\[\s*[a-zA-Z0-9]+(\.[a-zA-Z0-9]+(=(([a-zA-Z]+)|(-?[0-9]+)))?)?\s*", "", content)
     content = re.sub("\]", "", content)
-    content = re.sub(":.+:", "「絵文字」", content)
+    content = re.sub(":.+:", lambda match: '「'+exchangeEmoji(match.group())+'」', content)
     content = re.sub("```.*```", "「コード」", content)
     content = re.sub("@\S+", "「メンション」", content)
     content = re.sub("#\S+", "「ハッシュタグ」", content)
     content = re.sub("<\/?[a-zA-Z]+>", "", content)
     content = re.sub("[*>]", "", content)
-    content = emoji.replace_emoji(content, "「絵文字」")
+    content = emoji.demojize(content, delimiters=('「', '」'),language='ja')
 
     return content
-
 
 def speak_bouyomi(text='秘密のメッセージ', voice=0, volume=-1, speed=-1, tone=-1):
     res = requests.get(
@@ -123,7 +130,7 @@ def create_reaction(emoji_name):
 
     payload = {
         "noteId": '',
-        "reaction": f':{emoji_name}:'
+        "reaction": emoji_name
     }
 
     res = requests.post(url, headers=headers, data=json.dumps(payload))

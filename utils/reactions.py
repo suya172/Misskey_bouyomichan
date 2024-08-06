@@ -23,8 +23,10 @@ def get_emojis_dict(host, load_chunk=False) -> dict:
         data = res.json()
         EMOJI_DICT = {}
         for emoji in data['emojis']:
+            name = ':' + emoji['name'] + ':'
             for alias in emoji['aliases']:
-                EMOJI_DICT.setdefault(alias, []).append(emoji['name'])
+                EMOJI_DICT.setdefault(alias, []).append(name)
+                EMOJI_DICT.setdefault(name, []).append(alias)
 
         with open(path, 'wb') as f:
             pickle.dump(EMOJI_DICT, f)
