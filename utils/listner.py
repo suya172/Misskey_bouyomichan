@@ -9,7 +9,6 @@ import pyaudio
 FORMAT = pyaudio.paInt16
 SAMPLE_RATE = 44100        # サンプリングレート
 CHANNELS = 1            # モノラルかバイラルか
-INPUT_DEVICE_INDEX = 3       # マイクのチャンネル
 CALL_BACK_FREQUENCY = 3      # コールバック呼び出しの周期[sec]
 
 
@@ -52,7 +51,7 @@ def callback(in_data, frame_count, time_info, status):
         return (None, pyaudio.paContinue)
 
 
-def realtime_textise(d):
+def realtime_textise(d, device_index):
     """
     リアルタイムで音声を文字起こしする
     """
@@ -76,7 +75,7 @@ def realtime_textise(d):
     stream = audio.open(format=FORMAT,
                         rate=SAMPLE_RATE,
                         channels=CHANNELS,
-                        input_device_index=INPUT_DEVICE_INDEX,
+                        input_device_index=device_index,
                         input=True,
                         # CALL_BACK_FREQUENCY 秒周期でコールバック
                         frames_per_buffer=SAMPLE_RATE*CALL_BACK_FREQUENCY,
