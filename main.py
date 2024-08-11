@@ -21,7 +21,7 @@ def get_args():
     parser.add_argument("-C", "--channel", type=str,
                         choices=channels, default="localTimeline")
     parser.add_argument(
-        "-B", "--bouyomichan-path", type=str, default="C:\BouyomiChan_0_1_11_0_Beta21\BouyomiChan.exe")
+        "-B", "--bouyomichanpath", type=str, default="C:\BouyomiChan_0_1_11_0_Beta21\BouyomiChan.exe")
     parser.add_argument("--talk", action="store_true")
     parser.add_argument("-D", "--device-index", type=int, default=0)
     return parser.parse_args()
@@ -32,7 +32,7 @@ is_talk = get_args().talk
 HOST = get_args().host
 TOKEN = get_args().token
 CHANNEL = get_args().channel
-BOUYOMICHAN_PATH = get_args().B
+BOUYOMICHAN_PATH = get_args().bouyomichanpath
 DEVICE_INDEX = get_args().device_index
 
 EMOJI_DICT = reactions.get_emojis_dict(HOST)
