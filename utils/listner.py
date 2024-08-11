@@ -63,12 +63,12 @@ def realtime_textise(d, device_index):
     # speech recogniserインスタンスを生成
     sprec = sr.Recognizer()
 
-    # kakasi インスタンス生成
+    # kakasiインスタンスを生成
     kks = kakasi()
     kks.setMode('J', 'H')
     kks_converter = kks.getConverter()
 
-    # Audio インスタンス取得
+    # Audioインスタンスを生成
     audio = pyaudio.PyAudio()
 
     # ストリームオブジェクトを作成
