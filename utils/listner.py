@@ -3,6 +3,7 @@ import wave
 import time
 from datetime import datetime
 from pykakasi import kakasi
+import window
 
 import pyaudio
 
@@ -39,6 +40,8 @@ def callback(in_data, frame_count, time_info, status):
         sprec_hiragana = kks_converter.do(sprec_text)
 
         print(sprec_hiragana)
+        window.log(sprec_hiragana)
+
         on_spoken(sprec_hiragana)
 
     except sr.UnknownValueError:

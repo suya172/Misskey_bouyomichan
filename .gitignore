@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 out.txt
-hoge.py
+*hoge.py
 *.pkl

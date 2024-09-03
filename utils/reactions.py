@@ -1,10 +1,12 @@
 import requests
 import json
 import pickle
+import window
 
 
 def get_emojis_dict(host, load_chunk=False) -> dict:
     print('\033[92m絵文字一覧を取得します\033[0m')
+    window.log('絵文字一覧を取得します')
     path = './picklejar/' + host.replace('.', '') + '_emojidict.pkl'
     if load_chunk:
         with open(path, 'rb') as f:
@@ -19,6 +21,7 @@ def get_emojis_dict(host, load_chunk=False) -> dict:
             return {}
         else:
             print('\033[92m絵文字一覧を取得しました\033[0m')
+            window.log('絵文字一覧を取得しました')
 
         data = res.json()
         EMOJI_DICT = {}
