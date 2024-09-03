@@ -8,8 +8,10 @@ import subprocess
 import time
 import argparse
 import random
-from window import Window, eg
+from window import Window
 from utils import reactions, listner
+import asyncio
+import tkinter as tk
 
 
 websocket.enableTrace(True)
@@ -31,59 +33,74 @@ class App:
 
 
     def __init__(self):
-        self.current_note_id = ''
+        self.is_talk = False
+        self.HOST = ""
+        self.TOKEN = ""
+        self.CHANNEL = ""
+        self.BOUYOMICHAN_PATH = ""
+        self.DEVICE_INDEX = 0
+        self.current_note_id = 'test'
+        self.EMOJI_DICT = {}
+        self.ws = None
+        self.ws_url = ""
+        self.window = None
+
+    def initialize(self):
         self.window = Window(self.click_start, self.click_stop)
+        return self.window
+    
+    async def websocket_run_forever(self):
+        while True:
+            try:
+                self.ws.run_forever()
+            except websocket.WebSocketException as e:
+                print(f"WebSocket error: {e}")
+                self.window.log(f"WebSocket error: {e}")
+                await asyncio.sleep(5)  # 再接続前に少し待機
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                self.window.log(f"Unexpected error: {e}")
+                break
 
     async def run(self, is_talk: bool, HOST: str, TOKEN: str, CHANNEL: str, BOUYOMICHAN_PATH: str, DEVICE_INDEX: int):
+        print('run')
         self.is_talk = is_talk
         self.HOST = HOST
         self.TOKEN = TOKEN
         self.CHANNEL = CHANNEL
         self.BOUYOMICHAN_PATH = BOUYOMICHAN_PATH
         self.DEVICE_INDEX = DEVICE_INDEX
-        await subprocess.Popen(self.BOUYOMICHAN_PATH)
+        
+        await asyncio.create_subprocess_exec(self.BOUYOMICHAN_PATH)
         self.EMOJI_DICT = reactions.get_emojis_dict(HOST)
 
         if self.is_talk:
-            # listner.look_for_audio_input()
             await listner.realtime_textise(self.on_spoken, self.DEVICE_INDEX)
+        
         self.ws_url = f"wss://{HOST}/streaming?i={TOKEN}"
         self.ws = websocket.WebSocketApp(self.ws_url,
                                     on_open=self.on_open,
                                     on_message=self.on_message,
                                     on_error=self.on_error,
                                     on_close=self.on_close)
-        self.ws.run_forever()
+        
+        await self.websocket_run_forever()
 
     def stop(self):
         self.ws.close()
 
-    def click_start(self):
-        is_talk = self.window.get('-is_talk-')
-        HOST = self.window.get('-host-')
-        TOKEN = self.window.get('-token-')
-        CHANNEL = self.window.get('-channel-')
-        BOUYOMICHAN_PATH = self.window.get('-bouyomichanpath-')
-        DEVICE_INDEX = self.window.get('-mic_channel-')
-        if HOST == '' or TOKEN == '':
-            eg.popup("ホスト名とAPIトークンを入力してください")
-            return
-        if CHANNEL == '':
-            eg.popup("チャンネルを選択してください")
-            return
-        if is_talk and BOUYOMICHAN_PATH == '':
-            eg.popup("棒読みちゃんのパスを入力してください")
-            return
-        if is_talk and DEVICE_INDEX == '':
-            eg.popup("マイクチャンネルを選択してください")
-            return
-
-        self.window.log("読み上げを開始します")
-        self.run()
+    def click_start(self, is_talk: bool, HOST: str, TOKEN: str, CHANNEL: str, BOUYOMICHAN_PATH: str, DEVICE_INDEX: int):
+        print("click_start")
+        if self.window:
+            self.window.log("読み上げを開始します")
+        asyncio.create_task(self.run(is_talk=is_talk, HOST=HOST, TOKEN=TOKEN, CHANNEL=CHANNEL, BOUYOMICHAN_PATH=BOUYOMICHAN_PATH, DEVICE_INDEX=DEVICE_INDEX))
+        return True
     
     def click_stop(self):
-        self.window.log("読み上げを終了します")
-        self.stop()
+        if self.window:
+            self.window.log("読み上げを終了します")
+        if self.ws:
+            self.ws.close()
 
     def on_open(self,ws):
         message = {
@@ -95,7 +112,8 @@ class App:
         }
         ws.send(json.dumps(message))
         print("タイムラインに接続しました")
-        self.window.log("タイムラインに接続しました")
+        if self.window:
+            self.window.log("タイムラインに接続しました")
 
 
     def on_message(self,ws, message):
@@ -201,6 +219,15 @@ class App:
             self.window.log(f"エラーが発生しました。ステータスコード: {res.status_code}")
             print(f"\033[92mレスポンス: {res.text}\033[0m")
             self.window.log(f"レスポンス: {res.text}")
+
+        async def run_tk(self, root, interval=0.05):
+            try:
+                while True:
+                    root.update()
+                    await asyncio.sleep(interval)
+            except tk.TclError as e:
+                if "application has been destroyed" not in str(e):
+                    raise
         
 
 
@@ -221,5 +248,21 @@ def get_args():
     return parser.parse_args()
 
 
+async def main():
+    app = App()
+    window = app.initialize()
+    
+    root = window.window.master  # TkEasyGUIのWindowオブジェクトからTkinterのrootウィンドウを取得
+
+     # メインループを開始する前に、イベントループを取得し、アプリケーションにセット
+    loop = asyncio.get_event_loop()
+    app.loop = loop
+
+    # Tkinterのイベントループとasyncioのイベントループを並行して実行
+    await asyncio.gather(
+        app.run_tk(root),
+        # 他の非同期タスクがあればここに追加
+    )
+
 if __name__ == "__main__":
-    sp = App()
+    asyncio.run(main())

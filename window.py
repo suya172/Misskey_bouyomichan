@@ -11,7 +11,6 @@ class Window:
     mic_list = get_input_channels.get_mic_list()
     channel_list = ["globalTimeline", "homeTimeline","hybirdTimeline", "localTimeline", "main"]
     window: eg.Window # type: ignore
-
     # レイアウトの定義
     layout = [
         [
@@ -62,14 +61,25 @@ class Window:
     log_list = []
     def __init__(self, click_start, click_stop):
         self.window = eg.Window('棒読みすきー', self.layout)
-        self.window['-bouyomichanpath-'].set_disabled(disabled=True)
-        self.window['-bouyomichanpath_browse-'].set_disabled(disabled=True)
         self.window['-mic_channel-'].set_disabled(disabled=True)
         self.window['-stop-'].set_disabled(disabled=True)
         for event, values in self.window.event_iter():
             if event == '-run-':
+                if values['-host-'] == '' or values['-token-'] == '':
+                    eg.popup('ホスト名とトークンを入力してください')
+                    continue
+                if values['-channel-'] == '':
+                    eg.popup('チャンネルを選択してください')
+                    continue
+                if values['-is_talk-']:
+                    if values['-bouyomichanpath-'] == '':
+                        eg.popup('棒読みちゃんのパスを指定してください')
+                        continue
+                    if values['-mic_channel-'] == '':
+                        eg.popup('マイクチャンネルを指定してください')
+                        continue
                 self.window['-run-'].set_disabled(disabled=True)
-                click_start()
+                click_start(is_talk=values['-is_talk-'], HOST=values['-host-'], TOKEN=values, CHANNEL=values['-channel-'], BOUYOMICHAN_PATH=values['-bouyomichanpath-'], DEVICE_INDEX=values['-mic_channel-'])
                 self.window['-stop-'].set_disabled(disabled=False)
             elif event == eg.WIN_CLOSED:
                 eg.popup('Goodbye!')
@@ -80,12 +90,8 @@ class Window:
                 self.window['-run-'].set_disabled(disabled=False)
             elif event == '-is_talk-':
                 if values['-is_talk-']:
-                    self.window['-bouyomichanpath-'].set_disabled(disabled=False)
-                    self.window['-bouyomichanpath_browse-'].set_disabled(disabled=False)
                     self.window['-mic_channel-'].set_disabled(disabled=False)
                 else:
-                    self.window['-bouyomichanpath-'].set_disabled(disabled=True)
-                    self.window['-bouyomichanpath_browse-'].set_disabled(disabled=True)
                     self.window['-mic_channel-'].set_disabled(disabled=True)
 
 
